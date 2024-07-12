@@ -90,9 +90,54 @@ insert into sales (sale_ID,sale_Date,total_Price,discount,final_Price,customer_I
 /*Then i can change it to OFF*/
 set identity_insert sales off;
 
+insert into product_Categories values(1,'Fruits');
+insert into product_Categories values(2,'Juice');
+insert into product_Categories values(3,'Chocolate');
+
+insert into product values (5,'Orange',106.5,1);
+insert into product values (10,'Apple',50.4,2);
+insert into product values (3,'Merci',70.0,3);
+insert into product(product_ID,product_Name,market_Price) values (1,'Rice',35.0);
+
+select * from product_Categories
+
+create view V1 as select product_ID,product_Name from product;
+
+select * from V1;
+
+select customer_ID,email,phone from Customer; 
+
 select top 3 * from sales; /*Get the first 3 lines of data*/
 
 select top 3 percent * from sales; /*Get 3% of the data*/
 
 select * from sales order by sale_ID offset 3 rows fetch next 5 rows only; /*Skip the first 3 lines and retrieve the first 5 lines after them ,
                                                                              i can't use fetch without order by clause*/
+select count(sale_ID) from sales;
+select avg(sale_ID) from sales;
+
+select 
+    p.product_ID,
+    p.product_Name,
+    p.market_Price,
+    pc.category_Name
+from 
+    product p
+left join
+    product_Categories pc
+on 
+    p.category_ID = pc.category_ID;
+
+
+select 
+    p.product_ID,
+    p.product_Name,
+    p.market_Price,
+    pc.category_Name
+from 
+    product p
+ join
+    product_Categories pc
+on 
+    p.category_ID = pc.category_ID;
+
