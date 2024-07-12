@@ -141,3 +141,92 @@ from
 on 
     p.category_ID = pc.category_ID;
 
+
+/*Simple Function: Calculate Discounted Price
+This function calculates the final price after applying a discount to a product's market price.*/
+
+CREATE FUNCTION dbo.CalculateDiscountedPrice (
+    @product_ID INT,
+    @discount DECIMAL(8,2)
+)
+RETURNS DECIMAL(8,2)
+AS
+BEGIN
+    DECLARE @market_Price DECIMAL(8,2);
+    SELECT @market_Price = market_Price FROM product WHERE product_ID = @product_ID;
+    RETURN @market_Price - (@market_Price * @discount / 100);
+END;
+
+/*we can call this function as follows:*/
+SELECT dbo.CalculateDiscountedPrice(5, 10); -- Calculates the price of product with ID 5 with a 10% discount
+
+
+/*Complex Function: Retrieve Sales Summary
+This function returns a summary of sales, including the total price, discount, final price, customer details, and employee details.*/
+
+CREATE FUNCTION dbo.GetSalesSummary (
+    @sale_ID INT
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        s.sale_ID,
+        s.sale_Date,
+        s.total_Price,
+        s.discount,
+        s.final_Price,
+        c.customer_ID,
+        c.first_Name AS customer_FirstName,
+        c.last_Name AS customer_LastName,
+        c.email AS customer_Email,
+        c.phone AS customer_Phone,
+        e.employee_ID,
+        e.first_Name AS employee_FirstName,
+        e.last_Name AS employee_LastName,
+        e.hire_Date,
+        e.gender,
+        e.contract_Type
+    FROM 
+        sales s
+    JOIN 
+        Customer c ON s.customer_ID = c.customer_ID
+    JOIN 
+        employee e ON s.employee_ID = e.employee_ID
+    WHERE 
+        s.sale_ID = @sale_ID
+);
+
+/*we can call this function as follows:*/
+SELECT * FROM dbo.GetSalesSummary(1); -- Retrieves the sales summary for sale with ID 1
+
+
+/*Stored Procedure: Update Product Market Price
+This procedure updates the market price of a product.*/
+CREATE PROCEDURE dbo.UpdateProductMarketPrice
+    @product_ID INT,
+    @new_Market_Price DECIMAL(8,2)
+AS
+BEGIN
+    -- Ensure the new market price is valid
+    IF @new_Market_Price <= 0
+    BEGIN
+        RAISERROR('Market price must be greater than 0.', 16, 1);
+        RETURN;
+    END
+    
+    -- Update the market price
+    UPDATE product
+    SET market_Price = @new_Market_Price
+    WHERE product_ID = @product_ID;
+
+    -- Check if the update was successful
+    IF @@ROWCOUNT = 0
+    BEGIN
+        RAISERROR('Product ID not found.', 16, 1);
+    END
+END;
+
+/*we can call this procedure as follows:*/
+EXEC dbo.UpdateProductMarketPrice @product_ID = 5, @new_Market_Price = 120.00;
